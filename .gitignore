@@ -1,0 +1,17 @@
+db.*
+*.sqlite3
+gwj_infra/settings/private.py
+static
+*.log
+*.pyc
+*~
+.*.swp
+old_dbs
+media
+activate
+.htpasswd-private
+.DS_Store
+env_fc
+._.*
+.EnEV2013
+.htpasswd
