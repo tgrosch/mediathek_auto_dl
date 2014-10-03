@@ -1,0 +1,38 @@
+{% extends "dl_gui/layout.html" %}
+{% load staticfiles %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>
+            Sendungs&uuml;bersicht
+            <small>alle Sendungen als Download</small>
+        </h1>
+    </div>
+    <div class="panel panel-default">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <th>#</th>
+                <th>Name</th>
+                <th>Folgen (geladen/verfügbar)</th>
+                <th>letzte Folge</th>
+            </thead>
+            <tbody>
+                {% for show in shows %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="{% url "dl_gui:detail" show_id=show.id %}">{{ show.name }}</a></td>
+                        <td>{{ show.episodes.all.count }} / {{ show.available }}</td>
+                        <td>{% firstof show.last_episode|date:"d.m.Y" "-" %}</td>
+                    </tr>
+                {% endfor %}
+                {% if not shows %}
+                    <tr id="no_episodes" class="active">
+                        <td colspan="5">
+                            <center>keine Sendungen gefunden</center>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

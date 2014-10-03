@@ -1,0 +1,76 @@
+{% load staticfiles %}
+{% load dl_gui_extras %}
+
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+        <link rel="stylesheet" href="{% static "css/style.css" %}">
+        <script src="{% static "js/jquery-2.1.1.min.js" %}"></script>
+        <script src="{% static "js/bootstrap.min.js" %}"></script>
+        {% block top_scripts %}
+        {% endblock %}
+    </head>
+    <body>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="{% url "dl_gui:index" %}">Mediathek</a>
+                </div>
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li class="{% url_attr "dl_gui:overview" "active" %}"><a href="{% url "dl_gui:overview" %}">Sendungs&uuml;bersicht</a></li>
+                        <li class="{% url_attr "dl_gui:manage" "active" %}"><a href="{% url "dl_gui:manage" %}">Verwaltung</a></li>
+                        <li class="dropdown hidden">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#">Action</a></li>
+                                <li><a href="#">Another action</a></li>
+                                <li><a href="#">Something else here</a></li>
+                                <li class="divider"></li>
+                                <li><a href="#">Separated link</a></li>
+                                <li class="divider"></li>
+                                <li><a href="#">One more separated link</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <form class="navbar-form navbar-right no-padding-right" role="search" method="post" action="{% url "dl_gui:search" %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon"><i class="glyphicon glyphicon-search"></i></div>
+                                <input type="text" class="form-control" name="search" placeholder="Sendung" value="{{ show_name }}">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container-fluid">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </body>
+    <script type="text/javascript">
+        $(function() {
+            $('form.navbar-form').each(function() {
+                $(this).find('input').keypress(function(e) {
+                    if(e.which == 10 || e.which == 13) {
+                        this.form.submit();
+                    }
+                });
+            });
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+    {% block bottom_scripts %}
+    {% endblock %}
+</html>

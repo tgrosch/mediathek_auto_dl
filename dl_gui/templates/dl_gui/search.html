@@ -1,0 +1,103 @@
+{% extends "dl_gui/layout.html" %}
+{% load staticfiles %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>
+            Suche
+            <small>Sendungen finden</small>
+        </h1>
+    </div>
+    
+    <div class="panel panel-default">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <th>#</th>
+                <th>Name</th>
+                <th>Folgen (geladen/verfügbar)</th>
+                <th>Quelle</th>
+                <th>Aktion</th>
+            </thead>
+            <tbody class="data_area">
+                {% for show in download_shows %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ show.name }}</td>
+                        <td>{{ show.episodes.all.count }} / {{ show.available }}</td>
+                        <td>{{ show.source.name }}</td>
+                        <td><a href="{% url "dl_gui:detail" show_id=show.id %}" class="btn btn-xs btn-info">Öffnen</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block bottom_scripts %}
+    <script type="text/javascript">
+        $(function() {
+            show_data = {};
+            var sources = JSON.parse('{{ sources_dict|safe }}');
+            var ignore_dict = JSON.parse('{{ ignore_dict|safe }}');
+            data_offset = {{ download_shows|length }};
+            $.each(sources, function(sid, source) { 
+                var ignore_list = ignore_dict[sid];
+                $(".data_area").append('<tr id="loading_'+sid+'"><td colspan="5"><div class="progress no-margin-bottom"><div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><b>'+source.name+'</b></div></div></td></tr>');
+                $.ajax({
+                    url: "{% url "dl_data:search" %}",
+//                    type: "POST",
+                    data: {
+                        search: "{{ show_name }}",
+                        source: source.app_name,
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        ignore: ignore_list
+                    },
+                    success: function(data){
+                        var data_list = JSON.parse(data);
+                        var html_code = "";
+                        for (var j = 0; j < data_list.length; j++) {
+                            html_code += '<tr class="data_area_row" data-sid="'+sid+'" data-number="'+j+'"><td>'+(j+data_offset+1)+'</td><td>'+data_list[j].name+'</td><td>0 / '+data_list[j].available+'</td><td>'+source.name+'</td><td class="actions"><a data-href="{% url "dl_data:add" %}" class="btn btn-xs btn-success add_show">hinzufügen</a></td></tr>';
+                        }
+                        data_offset += data_list.length;
+                        $("tr#loading_"+sid).remove();
+                        if (!html_code) {
+                            if ($(".data_area").find("tr").length<1) {
+                                $(".data_area").html('<tr class="active"><td colspan="5"><center>keine Suchergebnisse</center></td></tr>');
+                            }
+                        } else {
+                            $(".data_area").append(html_code);
+                            
+                            $("a.add_show").click(function(){
+                                var row = $(this).closest("tr.data_area_row");
+                                var sid = row.data("sid");
+                                var number = row.data("number");
+                                var url = $(this).data("href");
+                                $(this).addClass("disabled").prepend('<i class="glyphicon glyphicon-refresh rotate"></i> ');
+                                var send_data = show_data[sid][number];
+                                send_data["source"] = sid;
+                                send_data["csrfmiddlewaretoken"] = "{{ csrf_token }}",
+                                $.ajax({
+                                    url: url,
+                                    type: "POST",
+                                    data: send_data,
+                                    success: function(data) {
+                                        var data_dict = JSON.parse(data);
+                                        row.find("td.actions").html('<a href="'+data_dict.url+'" class="btn btn-xs btn-info">Öffnen</a>');
+                                    }
+                                }).fail(function(){
+                                    row.find("td.actions").html('<a class="btn btn-xs btn-danger disabled">Fehler</a>');
+                                });
+                            });
+                            
+                            data_dict = {}
+                            data_dict[sid] = data_list;
+                            $.extend(show_data, data_dict);
+                        }
+                    }
+                }).fail(function(){
+                    $("tr#loading_"+sid).html('<td colspan="5"><div class="progress no-margin-bottom"><div class="progress-bar progress-bar-danger progress-bar-striped" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><b>'+source.name+' (Suche fehlgeschlagen)</b></div></div></td>');
+                });
+            });
+        })
+    </script>
+{% endblock %}

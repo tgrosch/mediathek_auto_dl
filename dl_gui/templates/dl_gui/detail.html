@@ -1,0 +1,109 @@
+{% extends "dl_gui/layout.html" %}
+{% load staticfiles %}
+
+{% block content %}
+    <div class="alert alert-success update_info hidden" role="alert">
+        <p>
+            <b>Aktualisierung durchgeführt!</b>
+        </p>
+    </div>
+
+    <div class="alert alert-danger update_error hidden" role="alert">
+        <p>
+            <b>Aktualisierung konnte nicht ausgeführt werden!</b>
+        </p>
+    </div>
+
+    <div class="page-header">
+        <p class="pull-right">
+            <a class="btn btn-lg btn-info update_episodes" data-toggle="tooltip" data-placement="top" title="alle sofort laden">
+                <i class="glyphicon glyphicon-download-alt"></i>
+            </a>
+            <a class="btn btn-lg btn-success update_episodes" data-toggle="tooltip" data-placement="top" title="Episoden aktualisieren"><i class="glyphicon glyphicon-refresh"></i></a>
+            <a class="btn btn-lg btn-danger delete_show" data-toggle="tooltip" data-placement="top" title="Sendung löschen"><i class="glyphicon glyphicon-trash"></i></a>
+        </p>
+        <h1>
+            {{ show.name }}
+            <small>{{ show.source.name }}</small>
+        </h1>
+    </div>
+    <div class="panel panel-default">
+        <table class="table table-bordered">
+            <thead>
+                <th>Staffel</th>
+                <th>Folge</th>
+                <th>Titel</th>
+                <th>Datum</th>
+                <th>Aktionen</th>
+            </thead>
+            <tbody class="data_area">
+                {% for episode in episodes %}
+                    <tr class="{% if episode.done %}success{% elif episode.done == None %}warning{% else %}danger{% endif %}">
+                        <td>{{ episode.season }}</td>
+                        <td>{{ episode.episode }}</td>
+                        <td>{{ episode.title }}</td>
+                        <td>{{ episode.airdate|date:"d.m.Y" }}</td>
+                        <td>
+                            {% if episode.done %}
+                                <a href="" class="btn btn-warning btn-xs"><i class="glyphicon glyphicon-download-alt"></i> neu laden</a>
+                                <a href="" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i> löschen</a>
+                            {% elif episode.done == None %}
+                                <a href="" class="btn btn-info btn-xs"><i class="glyphicon glyphicon-download-alt"></i> sofort laden</a>
+                            {% else %}
+                                <a href="" class="btn btn-warning btn-xs"><i class="glyphicon glyphicon-download-alt"></i> erneut laden</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if not episodes %}
+                    <tr id="no_episodes" class="active">
+                        <td colspan="5">
+                            <center>keine Episoden gefunden</center>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block bottom_scripts %}
+    <script type="text/javascript">
+        $(function(){
+            $(".update_info").removeClass("hidden").hide();
+            $(".update_error").removeClass("hidden").hide();
+            $(".update_episodes").click(function(){
+                $(".update_episodes").addClass("disabled").find(".glyphicon-refresh").addClass("rotate");
+                $.ajax({
+                    url: "{% url "dl_data:update_show" %}",
+//                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        show: {{ show.id }}
+                    },
+                    success: function(data) {
+                        var data_dict = JSON.parse(data);
+                        var html_code = "";
+                        $.each(data_dict, function(eid, edata){
+                            html_code += '<tr class="warning"><td>'+edata.season+'</td><td>'+edata.episode+'</td><td>'+edata.title+'</td><td>'+edata.airdate+'</td><td></td></tr>';
+                        });
+                        if (Object.keys(data_dict).length > 0) {
+                            $("tr#no_episodes").remove();
+                        }
+                        $(".data_area").prepend(html_code);
+                        $(".update_episodes").removeClass("btn-danger").removeClass("btn-warning").addClass("btn-success");
+                        $(".update_info").slideDown(500).delay(2000).slideUp(500, function() {
+                            $(".update_episodes").removeClass("disabled");
+                        });
+                        $(".update_episodes .glyphicon-refresh").removeClass("rotate");
+                    }
+                }).fail(function(){
+                        $(".update_episodes").removeClass("btn-success").addClass("btn-danger").find(".glyphicon-refresh").removeClass("rotate");
+                        $(".update_error").slideDown(500).delay(2000).slideUp(500, function() {
+                            $(".update_episodes").removeClass("btn-danger").addClass("btn-warning").removeClass("disabled");
+                        });
+                });
+            });
+        });
+    </script>
+{% endblock %}
