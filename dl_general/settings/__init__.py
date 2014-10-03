@@ -22,6 +22,9 @@ from private import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+import sys
+DENY_DB_ACCESS = 'syncdb' in sys.argv or 'migrate' in sys.argv
+
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = ["*"]

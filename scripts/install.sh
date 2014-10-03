@@ -18,6 +18,8 @@ echo "creating virtualenv: $envname"
 virtualenv "$workingpath/$envname"
 if source "$workingpath/$envname/bin/activate" > /dev/null; then
     pip install -r "$scriptpath/requirements.txt"
+    [[ -f "$workingpath/db/db.sqlite3" ]] || "$workingpath/manage.py" syncdb --noinput --no-initial-data
+    "$workingpath/manage.py" migrate
     "$workingpath/manage.py" reset_key
     deactivate
 fi

@@ -25,8 +25,9 @@ class Source(models.Model):
             self.__handler = __import__('%s.handler' % self.app_name).handler
         return self.__handler.get_available_episodes(self, show)
 
-for source_app in settings.SOURCE_APPS:
-    handler = __import__('%s.handler' % source_app).handler
-    this_source, created = Source.objects.get_or_create(name=handler.SOURCE_NAME, app_name=source_app)
-    if settings.DEBUG:
-        print u'%s als Qulle unter dem Namen "%s" geladen' % (this_source.app_name, this_source.name)
+if not settings.DENY_DB_ACCESS:
+    for source_app in settings.SOURCE_APPS:
+        handler = __import__('%s.handler' % source_app).handler
+        this_source, created = Source.objects.get_or_create(name=handler.SOURCE_NAME, app_name=source_app)
+        if settings.DEBUG:
+            print u'%s als Qulle unter dem Namen "%s" geladen' % (this_source.app_name, this_source.name)

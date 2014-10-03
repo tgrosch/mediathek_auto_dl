@@ -1,1 +1,1 @@
-SECRET_KEY = 'fl03t%^vfa3bf#w19i#c#*e1zr1x5%1e*g_6t$^3i*s-$0jzb@_*imk%&()-eek+ic6$-yyj0vv73@bqa71o!j8gzl(p*xgfouib'
+SECRET_KEY = 'q9&5m+d&1fmls=fkxx58b)fo3jn86lkv=osw(!r()z#qq_-3e-sbulxv4l*m3fo3q+a1uim@7yx3$8unu(f4g&1(zy&ng0-ba6_n'

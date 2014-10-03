@@ -9,14 +9,24 @@ Mediathek Auto Downloader
 * pip2
 * virtualenv
 
-## Installation
+## Installation (Linux/Mac)
 
     ./scripts/install.sh
-    ./manage.py syncdb
 
-## Usage
+## Usage (Linux/Mac)
     . activate
     ./manage.py runserver
+* Open your favorite browser and enter the following address:
+
+    http://localhost:8000/
+
+## Installation (Windows)
+
+    scripts/install.bat
+
+## Usage (Windows)
+    activate.bat
+    python manage.py runserver
 * Open your favorite browser and enter the following address:
 
     http://localhost:8000/
